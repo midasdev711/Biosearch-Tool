@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.css" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
+    <title>Protein Search Tool</title>
+</head>
+
+<body>
+    <div class="container">
+        <nav class="nav nav-bar" id="navbar">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/guide">User Guide</a></li>
+            </ul>
+        </nav>
+
+        <div id="content">
+            <div class="contentTitle">
+                <h1>Search</h1>
+            </div>
+            <div class="contentText">
+                <div class="row">
+                    <div class="col-lg-3">
+                        <form action="" method="post" onsubmit="return false;">
+                            <label for="identifiers">Provide your identifiers</label>
+                            <input type="text" name="identifiers" class="form-control" placeholder="e. g. P10636" onkeyup="this.value = this.value.toUpperCase();" id="identifiers">
+                            <br>
+                            <button type="submit" class="btn btn-default">Submit</button>
+                        </form>
+                    </div>
+                    <div class="col-lg-9 contentbox mt-2 pt-2">
+                        <div class="loader"></div>
+                    </div>
+                </div>
+            </div>
+        </div>        
+    </div>
+    
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $(".loader").hide();
+            $("button[type='submit']").click(function() {
+                var identifiers = $('#identifiers').val();
+                var contentbox = $(".contentbox");
+                contentbox.empty();
+                contentbox.append(`<div class="loader"></div>`);
+                $(".loader").show();
+                $.ajax({
+                    type: 'POST',
+                    url: '/getData',
+                    data: {"keyword" : identifiers} ,
+                    success: function(response) {
+                        console.log(response);
+                        var data = JSON.parse(response);
+                        var contentbox = $(".contentbox");
+                        contentbox.empty();
+                        if (!response["error"]) {
+                            
+                            var content = `<p>This is the accession code you submitted: ${data['keyword']}</p>
+                                            <p>This is your protein sequance:</p><p class="protein">${data['data']}</p>`;
+                            if (data["motif"].length == 0) {
+                                content += `<p><strong>Not Found</strong></p>`;
+                            }
+                            else {
+                                for (var i = 0; i < data["motif"].length; i++) {
+                                    content += `<p>Motif: <strong>${data["motif"][i]["name"]}</strong>, Found starting at position: <strong>${data["motif"][i]["start"]}</strong>, Ending at position: <strong>${data["motif"][i]["end"]}</strong></p>`;
+                                }
+                            }
+                            contentbox.append(content);
+                        }
+                        else {
+                            contentbox.append(`<p>${data["error"]}</p>`);
+                        }
+                        $(".loader").hide();
+                    },
+                });
+            });
+        });
+    </script>
+</body>
+</html>
