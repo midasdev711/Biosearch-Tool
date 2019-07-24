@@ -27,12 +27,6 @@ def about():
 def guide():
     return template("guide.html")
 
-#If you want to return a JSON you can use a common dict of Python, 
-# the conversion to JSON is automatically done by the framework
-@route('/sampleJSON', method='GET')
-def mySample():
-    return { "first": "This is the first", "second": "the second one here", "third": "and finally the third one!" }
-
 #If you have to send parameters, the right sintax is as calling the resoure
 # with a kind of path, with the parameters separed with slash ( / ) and they 
 # MUST to be written inside the lesser/greater than signs  ( <parameter_name> ) 
@@ -49,11 +43,11 @@ def getData():
             handle = urllib.request.urlopen(url)
             record = SeqIO.read(handle, "uniprot-xml")
             data = record
-            error = ""
+            error = None
 
         #--------- search motifs according to the pattern (reqular expression) -------
             seqSource = str(record.seq)
-            motifSre = re.findall(r'[ILV]Q[ARNDCQEGHILKMFPSTWYV][ARNDCQEGHILKMFPSTWYV][ARNDCQEGHILKMFPSTWYV][RK][ARNDCQEGHILKMFPSTWYV][ARNDCQEGHILKMFPSTWYV][ARNDCQEGHILKMFPSTWYV][RK]', seqSource)
+            motifSre = re.findall(r'[ILV]Q...[RK]...[RK]', seqSource)
             
         #---------- find the position of motifs in the sequance ------------
             for mtf in motifSre:
@@ -66,12 +60,13 @@ def getData():
 
         except Exception as e:
             data = []
-            error = "Invalid identifiers"
+            error = "Please try again with a valid identifier"
             result = {}
+            seqSource = ""
 
         #--------- when all the process finished, then show the result to the user ---------
 
-        context = {'data': seqSource, "keyword" : keyword, "result": result, "motif": motif}
+        context = {'data': seqSource, "keyword" : keyword, "result": result, "motif": motif, "error": error}
     else:
         context = {'data': "", "error": "Please input your identifiers"}
     # context = {'data': seqSource}
@@ -83,6 +78,7 @@ def favicon():
     return static_file('windowIcon.ico', root="C:/folder/images", mimetype="image/ico")
 
 
-
-#And the MOST important line to set this program as a web service provider is this
-run(host="localhost", port=8000)
+if os.environ.get('APP_LOCATION') == 'heroku':
+    run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+else:
+    run(host='localhost', port=8000, debug=True)

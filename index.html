@@ -26,7 +26,7 @@
                     <div class="col-lg-3">
                         <form action="" method="post" onsubmit="return false;">
                             <label for="identifiers">Provide your identifiers</label>
-                            <input type="text" name="identifiers" class="form-control" placeholder="e. g. P10636" onkeyup="this.value = this.value.toUpperCase();" id="identifiers">
+                            <input type="text" name="identifiers" class="form-control" placeholder="e. g. P12883" onkeyup="this.value = this.value.toUpperCase();" id="identifiers">
                             <br>
                             <button type="submit" class="btn btn-default">Submit</button>
                         </form>
@@ -55,11 +55,11 @@
                     url: '/getData',
                     data: {"keyword" : identifiers} ,
                     success: function(response) {
-                        console.log(response);
                         var data = JSON.parse(response);
+                        console.log(data['error']);
                         var contentbox = $(".contentbox");
                         contentbox.empty();
-                        if (!response["error"]) {
+                        if (data["error"] == null) {
                             
                             var content = `<p>This is the accession code you submitted: ${data['keyword']}</p>
                                             <p>This is your protein sequance:</p><p class="protein">${data['data']}</p>`;
@@ -75,6 +75,7 @@
                         }
                         else {
                             contentbox.append(`<p>${data["error"]}</p>`);
+                            alert(data["error"]);
                         }
                         $(".loader").hide();
                     },
