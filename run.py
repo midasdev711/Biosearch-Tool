@@ -4,6 +4,7 @@ import urllib
 import re
 import json
 import socket
+import os
 
 #These lines are needed for avoiding the "Access-Control-Allow-Origin" errors
 @hook('after_request')
